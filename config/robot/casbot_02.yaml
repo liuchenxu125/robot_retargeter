@@ -4,7 +4,6 @@ render_debug: False
 keypoints_path: ""
 joints_limit_offset_degrees:
   knee: [10.0, 0.0]
-  elbow: [20.0, 0.0]
 knee_angle_offset_degrees: 15.0
 
 robot_links:
@@ -119,15 +118,15 @@ key_frame_config:
   left_fore_arm:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
-      x: [1.0, 0.0, 0.0]
+      x: [0.0, 0.0, 1.0]
       y: [0.0, 1.0, 0.0]
-      z: [0.0, 0.0, 1.0]
+      z: [-1.0, 0.0, 0.0]
   left_hand:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
-      x: [1.0, 0.0, 0.0]
+      x: [0.0, 0.0, 1.0]
       y: [0.0, 1.0, 0.0]
-      z: [0.0, 0.0, 1.0]
+      z: [-1.0, 0.0, 0.0]
   right_arm:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
@@ -137,15 +136,15 @@ key_frame_config:
   right_fore_arm:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
-      x: [-1.0, 0.0, 0.0]
+      x: [0.0, 0.0, 1.0]
       y: [0.0, -1.0, 0.0]
-      z: [0.0, 0.0, 1.0]
+      z: [1.0, 0.0, 0.0]
   right_hand:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
-      x: [-1.0, 0.0, 0.0]
+      x: [0.0, 0.0, 1.0]
       y: [0.0, -1.0, 0.0]
-      z: [0.0, 0.0, 1.0]
+      z: [1.0, 0.0, 0.0]
   head:
     offset_deg_xyz: [0.0, 0.0, 0.0]
     axis_map_cols:
