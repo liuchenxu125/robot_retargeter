@@ -277,6 +277,7 @@ class RobotRetarget:
             enabled: bool
             gain / minimum_distance / detection_distance: shared self-collision params
             geom_groups: {group_name: [geom_name, ...]}  (plain geom names also work in pairs)
+            geom_padding: {geom_name: extra_clearance_in_meters}
             pairs: [[groupA, groupB], ...]  self-collision group pairs
             floor: {enabled, geom, geoms, gain, minimum_distance, detection_distance}
         """
@@ -294,6 +295,50 @@ class RobotRetarget:
                     raise ValueError(f"[collision avoidance] geom not found in model: {geom_name}")
             return geoms
 
+        padding = cfg.get("geom_padding", {})
+        if not isinstance(padding, dict):
+            raise ValueError("[collision avoidance] geom_padding must be a geom-to-distance mapping")
+        geom_padding = {}
+        for geom_name, value in padding.items():
+            geom_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_name)
+            if geom_id < 0:
+                raise ValueError(f"[collision avoidance] geom not found in model: {geom_name}")
+            try:
+                distance = float(value)
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"[collision avoidance] padding for {geom_name} must be finite and non-negative"
+                ) from None
+            if isinstance(value, bool) or not np.isfinite(distance) or distance < 0:
+                raise ValueError(
+                    f"[collision avoidance] padding for {geom_name} must be finite and non-negative"
+                )
+            geom_padding[geom_name] = distance
+
+        def add_limits(pairs, params, default_gain, default_minimum, default_detection):
+            # Partition by total padding so each pair keeps its own clearance.
+            # Mink still handles body/parent and collision-mask filtering.
+            pairs_by_padding = {}
+            for group_a, group_b in pairs:
+                for geom_a in group_a:
+                    for geom_b in group_b:
+                        extra = geom_padding.get(geom_a, 0.0) + geom_padding.get(geom_b, 0.0)
+                        pairs_by_padding.setdefault(extra, []).append(([geom_a], [geom_b]))
+            for extra, padded_pairs in pairs_by_padding.items():
+                self.ik_limits.append(
+                    mink.CollisionAvoidanceLimit(
+                        self.model,
+                        padded_pairs,
+                        gain=float(params.get("gain", default_gain)),
+                        minimum_distance_from_collisions=float(
+                            params.get("minimum_distance", default_minimum)
+                        ) + extra,
+                        collision_detection_distance=float(
+                            params.get("detection_distance", default_detection)
+                        ) + extra,
+                    )
+                )
+
         geom_pairs = []
         for pair in cfg.get("pairs", []):
             if len(pair) != 2:
@@ -301,15 +346,7 @@ class RobotRetarget:
             geom_pairs.append((resolve_group(pair[0]), resolve_group(pair[1])))
 
         if geom_pairs:
-            self.ik_limits.append(
-                mink.CollisionAvoidanceLimit(
-                    self.model,
-                    geom_pairs,
-                    gain=float(cfg.get("gain", 0.85)),
-                    minimum_distance_from_collisions=float(cfg.get("minimum_distance", 0.003)),
-                    collision_detection_distance=float(cfg.get("detection_distance", 0.05)),
-                )
-            )
+            add_limits(geom_pairs, cfg, 0.85, 0.003, 0.05)
             if self.verbose:
                 print(f"[collision avoidance] self-collision pairs: {cfg.get('pairs', [])}")
 
@@ -321,15 +358,7 @@ class RobotRetarget:
                 resolve_group(floor_geom)
                 for geom_name in contact_geoms:
                     resolve_group(geom_name)
-                self.ik_limits.append(
-                    mink.CollisionAvoidanceLimit(
-                        self.model,
-                        [(contact_geoms, [floor_geom])],
-                        gain=float(floor_cfg.get("gain", 0.7)),
-                        minimum_distance_from_collisions=float(floor_cfg.get("minimum_distance", 0.0)),
-                        collision_detection_distance=float(floor_cfg.get("detection_distance", 0.02)),
-                    )
-                )
+                add_limits([(contact_geoms, [floor_geom])], floor_cfg, 0.7, 0.0, 0.02)
                 if self.verbose:
                     print(f"[collision avoidance] floor pairs: {contact_geoms} vs {floor_geom}")
 

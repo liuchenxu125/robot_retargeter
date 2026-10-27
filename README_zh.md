@@ -127,6 +127,28 @@ RENDER_FPS=30 \
 
 运行结束后，重定向得到的机器人动作会保存在 `output_data/robot_motion/` 下。
 
+#### 指定部位的碰撞扩大余量
+
+在机器人 YAML 的 `collision_avoidance` 中添加 `geom_padding`，可让指定碰撞体在 IK 避碰时额外留出距离。下面的字段需合并进已有配置，保留原来的 `geom_groups` 和 `pairs`：
+
+```yaml
+collision_avoidance:
+  enabled: true
+  minimum_distance: 0.003
+  detection_distance: 0.05
+  geom_padding:
+    coll_l_elbow: 0.005
+    coll_r_elbow: 0.005
+    coll_l_palm: 0.003
+    coll_r_palm: 0.003
+```
+
+键是 XML 中的 **geom 名称**（不是 joint/body 名称或分组名称），值为非负有限距离，单位是米。未配置的碰撞体余量为 0；省略 `geom_padding` 或设为 `{}` 保持原行为。
+
+碰撞对的有效最小距离为 `minimum_distance + padding_A + padding_B`。例如肘部增加 5 mm、手掌增加 3 mm，二者之间会保留 `3 + 5 + 3 = 11 mm`。检测距离也增加相同余量，以提前激活约束。该方式兼容 mesh，通过安全距离实现虚拟扩大，模型外形和 XML 不变。
+
+余量只作用于已有 `pairs` 和已启用的 `floor` 碰撞对；仍沿用 mink 的同体、相邻体和碰撞掩码过滤。脚部配置余量也会增加离地距离，可能与足端接触锁定冲突，通常先从肘部、手掌等位置的 3–5 mm 开始调整。它是 IK 避碰约束，不保证在初始穿模或目标不可达时消除全部碰撞。
+
 #### 使用 Bones Seed G1 数据集
 
 [Bones Studio](https://huggingface.co/datasets/bones-studio/seed) 发布了以 G1 机器人为载体的 **Seed** 动作数据集，其原始格式（根节点使用欧拉角/厘米单位，关节值为角度）与本项目所需的 LAFAN1 格式（根节点使用四元数/米单位，关节值为弧度）不同，需要先用 `scripts/convert_bones_to_lafan1.py` 进行转换。

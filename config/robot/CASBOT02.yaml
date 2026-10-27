@@ -43,6 +43,20 @@ collision_avoidance:
   gain: 0.85
   minimum_distance: 0.003
   detection_distance: 0.05
+  # 按碰撞 geom 名称增加安全余量，单位：米；两侧余量相加。
+  # 左右肘部到手掌均额外留出 10 mm，不改变模型外形。
+
+  geom_padding:
+    coll_l_elbow: 0.03
+    coll_l_forearm: 0.03
+    coll_l_wrist_pitch: 0.03
+    coll_l_hand: 0.03
+    coll_r_elbow: 0.03
+    coll_r_forearm: 0.03
+    coll_r_wrist_pitch: 0.03
+    coll_r_hand: 0.03
+    coll_l_palm: 0.03
+    coll_r_palm: 0.03
   geom_groups:
     trunk: [coll_pelvis, coll_chest, coll_head]
     left_arm: [coll_l_shoulder_pitch, coll_l_upper_arm, coll_l_elbow, coll_l_forearm, coll_l_wrist_pitch, coll_l_hand, coll_l_palm]
