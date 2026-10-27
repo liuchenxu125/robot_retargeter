@@ -100,6 +100,7 @@ class RobotRetarget:
         joints_limit_offset_degrees: dict | None = None,
         contact_body_names: list | tuple | dict | None = None,
         contact_position_cost: float = 10.0,
+        collision_avoidance: dict | None = None,
     ):
         self.xml_file = model_path
         self.keypoint_path = keypoint_path
@@ -112,6 +113,7 @@ class RobotRetarget:
         self.joints_limit_offset_degrees = joints_limit_offset_degrees or {}
         self.contact_body_names = self._normalize_contact_body_names(contact_body_names)
         self.contact_position_cost = float(contact_position_cost)
+        self.collision_avoidance = collision_avoidance or {}
         self.verbose = verbose
         self.solver = solver
         self.human_body_to_task = {}
@@ -245,6 +247,7 @@ class RobotRetarget:
         # Apply offsets to the configured joint limits: raise the lower bound
         self._apply_joints_limit_offset()
         self.ik_limits = [mink.ConfigurationLimit(self.model)]
+        self._setup_collision_avoidance_limits()
         # VELOCITY_LIMITS = {k: 3*np.pi for k in self.robot_motor_names.keys()}
         # self.ik_limits.append(mink.VelocityLimit(self.model, VELOCITY_LIMITS)) 
 
@@ -266,6 +269,69 @@ class RobotRetarget:
                 self.robot_frame_names.append(robot_frame)
                 self.task_errors[task] = []
         pass
+
+    def _setup_collision_avoidance_limits(self):
+        """Register mink.CollisionAvoidanceLimit from the collision_avoidance config.
+
+        Config schema:
+            enabled: bool
+            gain / minimum_distance / detection_distance: shared self-collision params
+            geom_groups: {group_name: [geom_name, ...]}  (plain geom names also work in pairs)
+            pairs: [[groupA, groupB], ...]  self-collision group pairs
+            floor: {enabled, geom, geoms, gain, minimum_distance, detection_distance}
+        """
+        cfg = self.collision_avoidance
+        if not cfg or not cfg.get("enabled", False):
+            return
+
+        geom_groups = cfg.get("geom_groups", {})
+
+        def resolve_group(name):
+            geoms = geom_groups.get(name, [name])
+            for geom_name in geoms:
+                geom_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_name)
+                if geom_id < 0:
+                    raise ValueError(f"[collision avoidance] geom not found in model: {geom_name}")
+            return geoms
+
+        geom_pairs = []
+        for pair in cfg.get("pairs", []):
+            if len(pair) != 2:
+                raise ValueError(f"[collision avoidance] pair must have 2 entries, got {pair}")
+            geom_pairs.append((resolve_group(pair[0]), resolve_group(pair[1])))
+
+        if geom_pairs:
+            self.ik_limits.append(
+                mink.CollisionAvoidanceLimit(
+                    self.model,
+                    geom_pairs,
+                    gain=float(cfg.get("gain", 0.85)),
+                    minimum_distance_from_collisions=float(cfg.get("minimum_distance", 0.003)),
+                    collision_detection_distance=float(cfg.get("detection_distance", 0.05)),
+                )
+            )
+            if self.verbose:
+                print(f"[collision avoidance] self-collision pairs: {cfg.get('pairs', [])}")
+
+        floor_cfg = cfg.get("floor", {})
+        if floor_cfg.get("enabled", False):
+            floor_geom = floor_cfg.get("geom", "floor")
+            contact_geoms = floor_cfg.get("geoms", [])
+            if contact_geoms:
+                resolve_group(floor_geom)
+                for geom_name in contact_geoms:
+                    resolve_group(geom_name)
+                self.ik_limits.append(
+                    mink.CollisionAvoidanceLimit(
+                        self.model,
+                        [(contact_geoms, [floor_geom])],
+                        gain=float(floor_cfg.get("gain", 0.7)),
+                        minimum_distance_from_collisions=float(floor_cfg.get("minimum_distance", 0.0)),
+                        collision_detection_distance=float(floor_cfg.get("detection_distance", 0.02)),
+                    )
+                )
+                if self.verbose:
+                    print(f"[collision avoidance] floor pairs: {contact_geoms} vs {floor_geom}")
 
     def setup_contact_targets(self):
         if not self.contact_body_names or not self.contact_state_name_to_idx:
@@ -340,6 +406,21 @@ class RobotRetarget:
         target_pos = self.keypoints_pos[frame_idx, keypoint_idx]
         target_quat = self.keypoints_quat[frame_idx, keypoint_idx]
         return target_pos, target_quat
+
+    def _interpolate_target_pose(self, frame_idx, keypoint_name, alpha):
+        """Interpolate source poses between frames for collision-aware IK substeps."""
+        prev_idx = max(frame_idx - 1, 0)
+        pos0, quat0 = self._get_target_pose(prev_idx, keypoint_name)
+        pos1, quat1 = self._get_target_pose(frame_idx, keypoint_name)
+        pos = (1.0 - alpha) * np.asarray(pos0) + alpha * np.asarray(pos1)
+        quat0 = np.asarray(quat0, dtype=np.float64)
+        quat1 = np.asarray(quat1, dtype=np.float64)
+        # q and -q represent the same rotation; choose the short interpolation arc.
+        if np.dot(quat0, quat1) < 0:
+            quat1 = -quat1
+        quat = (1.0 - alpha) * quat0 + alpha * quat1
+        quat /= max(np.linalg.norm(quat), 1e-12)
+        return pos, quat
 
     def _get_body_pose(self, body_name):
         body_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, body_name)
@@ -439,12 +520,17 @@ class RobotRetarget:
                         f"[{lower:.4f}, {upper:.4f}] -> [{new_lower:.4f}, {new_upper:.4f}] rad"
                     )
  
-    def update_targets(self, frame_idx):
+    def update_targets(self, frame_idx, interpolation_alpha=None):
         # Record the keypoint targets (pos, quat_wxyz) mapped to tasks for the current frame, for visualization
         self.current_targets = []
         self.current_contact_points = []
         for keypoint_name, task in self.human_body_to_task.items():
-            target_pos, target_quat = self._get_target_pose(frame_idx, keypoint_name)
+            if interpolation_alpha is None:
+                target_pos, target_quat = self._get_target_pose(frame_idx, keypoint_name)
+            else:
+                target_pos, target_quat = self._interpolate_target_pose(
+                    frame_idx, keypoint_name, interpolation_alpha
+                )
             task.set_target(mink.SE3.from_rotation_and_translation(mink.SO3(target_quat), target_pos))
             robot_frame, pos_weight, rot_weight = self.ik_match_table[keypoint_name]
             self.current_targets.append(
@@ -460,6 +546,10 @@ class RobotRetarget:
         for contact_target in self.contact_targets:
             source_keypoint_name = contact_target["source_keypoint_name"]
             target_pos, is_active = self._get_contact_locked_position(frame_idx, contact_target)
+            if interpolation_alpha is not None and not is_active:
+                target_pos, _ = self._interpolate_target_pose(
+                    frame_idx, source_keypoint_name, interpolation_alpha
+                )
             if is_active:
                 _, target_quat = self._get_target_pose(frame_idx, source_keypoint_name)
             else:
@@ -636,28 +726,31 @@ class RobotRetarget:
             print("Controls: Space play/pause")
 
         try:
+            collision_substeps = max(1, int(self.collision_avoidance.get("ik_substeps", 4)))
             for frame_idx in tqdm(range(self.num_frames), desc="Retargeting", unit="frame"):
                 start_time = time.time()
-                self.update_targets(frame_idx)
+                # Solve along the source-frame interval, so collision constraints
+                # see intermediate poses instead of only the destination pose.
+                for substep in range(1, collision_substeps + 1):
+                    alpha = substep / collision_substeps
+                    self.update_targets(frame_idx, interpolation_alpha=alpha)
 
-                curr_error = self.error()
-                dt = self.configuration.model.opt.timestep
-
-                vel = mink.solve_ik(
-                    self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
-                )
-                self.configuration.integrate_inplace(vel, dt)
-                next_error = self.error()
-                num_iter = 0
-                while curr_error - next_error > 0.001 and num_iter < self.max_iter:
-                    curr_error = next_error
+                    curr_error = self.error()
                     dt = self.configuration.model.opt.timestep
                     vel = mink.solve_ik(
                         self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
                     )
                     self.configuration.integrate_inplace(vel, dt)
                     next_error = self.error()
-                    num_iter += 1
+                    num_iter = 0
+                    while curr_error - next_error > 0.001 and num_iter < self.max_iter:
+                        curr_error = next_error
+                        vel = mink.solve_ik(
+                            self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
+                        )
+                        self.configuration.integrate_inplace(vel, dt)
+                        next_error = self.error()
+                        num_iter += 1
                 curr_pos = self.configuration.data.qpos.copy()
                 self.result_pos.append(curr_pos)
 
@@ -747,7 +840,8 @@ if  __name__ == "__main__":
             for field_name in RobotRetarget.LEGACY_CONTACT_CONFIG_TO_NAMES
         }
     contact_position_cost = config.get("contact_pos_fixed_factor", 10.0)
-    
+    collision_avoidance = config.get("collision_avoidance")
+
     robot_retarget = RobotRetarget(
         model_path=robot_xml_path,
         keypoint_path=keypoints_path,
@@ -758,6 +852,7 @@ if  __name__ == "__main__":
         joints_limit_offset_degrees=joints_limit_offset_degrees,
         contact_body_names=contact_body_names,
         contact_position_cost=contact_position_cost,
+        collision_avoidance=collision_avoidance,
     )
 
     robot_retarget.retarget()

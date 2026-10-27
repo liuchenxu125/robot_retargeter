@@ -1,0 +1,462 @@
+WARNING Tue Oct 13 13:52:41 2026: Attach conflict when attaching 'H2' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING Tue Oct 13 14:04:42 2026: Attach conflict when attaching 'H2' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING Fri Oct 23 14:58:16 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Fri Oct 23 15:33:04 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时21分52秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时21分52秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时26分05秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时26分05秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时27分33秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时27分33秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分13秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分13秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分32秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分32秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分59秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时28分59秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分08秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分08秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分21秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分21秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分35秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分35秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分51秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时29分51秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分00秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分00秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分11秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分11秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分27秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分27秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分35秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分35秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分53秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时30分53秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分02秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分02秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分07秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分07秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分12秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分12秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分17秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分17秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分23秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分23秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分37秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分37秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分49秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时31分49秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分00秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分00秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分07秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分07秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分19秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分19秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分28秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分28秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分36秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分36秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分43秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分43秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分48秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分48秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分53秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分53秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分55秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分55秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分56秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分56秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分58秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分58秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分59秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时32分59秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分00秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分00秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分01秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分01秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分03秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分03秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分04秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分04秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分05秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分05秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分06秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分06秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分08秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分08秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分09秒: Attach conflict when attaching 'g1_29dof_rev_1_0' to 'multi_robot', policy is 'warning'
+integrator: parent has 0 (default), child has 2, keeping parent value
+
+WARNING 2026年10月26日 星期一 15时33分09秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Mon Oct 26 18:45:54 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Mon Oct 26 18:47:02 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 12:43:38 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 13:47:05 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING 2026年10月27日 星期二 13时47分09秒: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 14:55:11 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 14:55:45 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 15:10:50 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 15:18:38 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 15:52:46 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+
+WARNING Tue Oct 27 16:21:15 2026: Attach conflict when attaching 'CASBOT_02_shell_ENCOS_7dof' to 'multi_robot', policy is 'warning'
+timestep: parent has 0.002 (default), child has 0.001, keeping parent value
+tolerance: parent has 1e-08 (default), child has 1e-10, keeping parent value
+iterations: parent has 100 (default), child has 50, keeping parent value
+jacobian: parent has 2 (default), child has 0, keeping parent value
+

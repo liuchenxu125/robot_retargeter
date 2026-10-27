@@ -1,0 +1,198 @@
+robot_xml_path: "asset/robot/CASBOT02_7dof/xml/CASBOT_02_23dof.xml"
+verbose: True
+render_debug: False
+joints_limit_offset_degrees:
+  leg_l4_joint: [10.0, 0.0]
+  leg_r4_joint: [10.0, 0.0]
+  upper_left_4_joint: [20.0, 0.0]
+  upper_right_4_joint: [20.0, 0.0]
+knee_angle_offset_degrees: 15.0
+
+robot_links:
+  left_hip: [hips_sphere, leg_l2_link]
+  left_thigh: [leg_l2_link, leg_l4_link]
+  left_calf: [leg_l4_link, leg_l6_link]
+
+  right_hip: [hips_sphere, leg_r2_link]
+  right_thigh: [leg_r2_link, leg_r4_link]
+  right_calf: [leg_r4_link, leg_r6_link]
+
+  neck: [hips_sphere, neck_sphere]
+  head: [neck_sphere, head_sphere]
+
+  left_shoulder: [neck_sphere, left_shoulder_roll_link]
+  left_arm: [left_shoulder_roll_link, left_elbow_pitch_link]
+  left_fore_arm: [left_elbow_pitch_link, left_wrist_roll_link]
+
+  right_shoulder: [neck_sphere, right_shoulder_roll_link]
+  right_arm: [right_shoulder_roll_link, right_elbow_pitch_link]
+  right_fore_arm: [right_elbow_pitch_link, right_wrist_roll_link]
+
+contact_links: [left_foot_end_link, left_toe_link,
+                right_foot_end_link, right_toe_link,
+                left_wrist_roll_link, right_wrist_roll_link]
+
+contact_vel_calculate_window: 6
+contact_vel_threshold: 0.5
+contact_height_threshold: 0.05
+contact_height_lpf_alpha: 0.15
+contact_pos_fixed_factor: 15.0
+
+collision_avoidance:
+  enabled: true
+  gain: 0.85
+  minimum_distance: 0.003
+  detection_distance: 0.05
+  geom_groups:
+    trunk: [coll_pelvis, coll_chest, coll_head]
+    left_arm: [coll_l_shoulder_pitch, coll_l_upper_arm, coll_l_elbow, coll_l_forearm, coll_l_wrist_pitch, coll_l_hand, coll_l_palm]
+    right_arm: [coll_r_shoulder_pitch, coll_r_upper_arm, coll_r_elbow, coll_r_forearm, coll_r_wrist_pitch, coll_r_hand, coll_r_palm]
+    left_leg: [coll_l_hip_pitch, coll_l_hip_roll, coll_l_thigh, coll_l_calf]
+    right_leg: [coll_r_hip_pitch, coll_r_hip_roll, coll_r_thigh, coll_r_calf]
+    left_foot: [left_foot_collision]
+    right_foot: [right_foot_collision]
+  pairs:
+    # 躯干与四肢
+    - [trunk, left_arm]
+    - [trunk, right_arm]
+    - [trunk, left_leg]
+    - [trunk, right_leg]
+    # 左右对称
+    - [left_arm, right_arm]
+    - [left_leg, right_leg]
+    # 手臂与腿
+    - [left_arm, left_leg]
+    - [right_arm, right_leg]
+    - [left_arm, right_leg]
+    - [right_arm, left_leg]
+    # 手臂与脚
+    - [left_arm, left_foot]
+    - [right_arm, right_foot]
+    - [left_arm, right_foot]
+    - [right_arm, left_foot]
+    # 腿与脚（交叉）
+    - [left_leg, right_foot]
+    - [right_leg, left_foot]
+  floor:
+    enabled: true
+    geom: floor
+    geoms: [left_foot_collision, right_foot_collision]
+    gain: 0.7
+    minimum_distance: 0.0
+    detection_distance: 0.05
+
+ik_match_table: {
+  "hips_mean": ["hips_sphere", 100, 0],
+
+  "left_hip": ["leg_l2_link", 30, 3],
+  "left_thigh": ["leg_l4_link", 0.0, 3.0],
+  "left_calf": ["leg_l6_link", 30, 3],
+
+  "right_hip": ["leg_r2_link", 30, 3],
+  "right_thigh": ["leg_r4_link", 0.0, 3.0],
+  "right_calf": ["leg_r6_link", 30, 3],
+
+  "head": ["head_sphere", 0, 3.0],
+
+  "left_shoulder": ["left_shoulder_roll_link", 30, 3],
+  "left_arm": ["left_elbow_pitch_link", 10.0, 1],
+  "left_fore_arm": ["left_wrist_roll_link", 10, 1],
+
+  "right_shoulder": ["right_shoulder_roll_link", 30, 3],
+  "right_arm": ["right_elbow_pitch_link", 10.0, 1],
+  "right_fore_arm": ["right_wrist_roll_link", 10, 1]
+
+}
+
+
+key_frame_config:
+  hips_mean:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_up_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_foot:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_up_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_foot:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  shoulder_mean:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, 1.0, 0.0]
+      z: [-1.0, 0.0, 0.0]
+  left_fore_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [1.0, 0.0, 0.0]
+      y: [0.0, 1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  left_hand:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [1.0, 0.0, 0.0]
+      y: [0.0, 1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  right_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, -1.0, 0.0]
+      z: [1.0, 0.0, 0.0]
+  right_fore_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [-1.0, 0.0, 0.0]
+      y: [0.0, -1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  right_hand:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [-1.0, 0.0, 0.0]
+      y: [0.0, -1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  head:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]

@@ -330,3 +330,8 @@ In `robot_retarget.py`, for contact-active feet (or configured contact bodies), 
 3. This constraint is added as an extra `FrameTask` in optimization, weighted by `contact_pos_fixed_factor`.
 
 This significantly reduces foot sliding during support phase while preserving motion freedom during swing phase.
+
+
+
+# 
+ROBOT_MOTION_FILE="dataset/lafan1_g1/jumps1_subject1.csv" ORIGIN_ROBOT="g1" VIS_ROBOTS="h2" ./bash/retarget_from_robot.sh
