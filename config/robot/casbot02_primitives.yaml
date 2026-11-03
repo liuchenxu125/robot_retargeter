@@ -1,0 +1,197 @@
+robot_xml_path: "asset/robot/casbot02_primitives/xml/casbot02_primitives.xml"
+verbose: True
+render_debug: False
+# After IK, raise root z so the lowest foot vertex sits on the ground. Joints stay the same.
+plant_feet_on_ground: true
+joints_limit_offset_degrees:
+  upper_left_4_joint: [20.0, 0.0]
+  upper_right_4_joint: [20.0, 0.0]
+knee_angle_offset_degrees: 15.0
+
+robot_links:
+  left_hip: [hips_sphere, left_leg_pelvic_roll_link]
+  left_thigh: [left_leg_pelvic_roll_link, left_leg_knee_pitch_link]
+  left_calf: [left_leg_knee_pitch_link, left_leg_ankle_roll_link]
+
+  right_hip: [hips_sphere, right_leg_pelvic_roll_link]
+  right_thigh: [right_leg_pelvic_roll_link, right_leg_knee_pitch_link]
+  right_calf: [right_leg_knee_pitch_link, right_leg_ankle_roll_link]
+
+  neck: [hips_sphere, neck_sphere]
+  head: [neck_sphere, head_sphere]
+
+  left_shoulder: [neck_sphere, left_shoulder_roll_link]
+  left_arm: [left_shoulder_roll_link, left_elbow_pitch_link]
+  left_fore_arm: [left_elbow_pitch_link, left_wrist_roll_link]
+
+  right_shoulder: [neck_sphere, right_shoulder_roll_link]
+  right_arm: [right_shoulder_roll_link, right_elbow_pitch_link]
+  right_fore_arm: [right_elbow_pitch_link, right_wrist_roll_link]
+
+contact_links: [left_foot_end_link, left_toe_link,
+                right_foot_end_link, right_toe_link,
+                left_wrist_roll_link, right_wrist_roll_link]
+
+contact_vel_calculate_window: 6
+contact_vel_threshold: 0.5
+contact_height_threshold: 0.05
+contact_height_lpf_alpha: 0.15
+contact_pos_fixed_factor: 15.0
+
+collision_avoidance:
+  enabled: true
+  gain: 0.85
+  minimum_distance: 0.003
+  detection_distance: 0.05
+  geom_groups:
+    trunk: [pelvis_collision, torso_collision, head_yaw_collision, head_collision]
+    left_arm: [left_shoulder_pitch_collision, left_shoulder_roll_collision, left_upper_arm_collision, left_elbow_collision, left_forearm_collision, left_wrist_pitch_collision, left_wrist_roll_collision, left_hand_collision]
+    right_arm: [right_shoulder_pitch_collision, right_shoulder_roll_collision, right_upper_arm_collision, right_elbow_collision, right_forearm_collision, right_wrist_pitch_collision, right_wrist_roll_collision, right_hand_collision]
+    left_leg: [left_pelvic_pitch_collision, left_pelvic_roll_collision, left_thigh_collision, left_shin_collision, left_ankle_pitch_collision]
+    right_leg: [right_pelvic_pitch_collision, right_pelvic_roll_collision, right_thigh_collision, right_shin_collision, right_ankle_pitch_collision]
+    left_foot: [left_foot_collision]
+    right_foot: [right_foot_collision]
+  pairs:
+    - [trunk, left_arm]
+    - [trunk, right_arm]
+    - [trunk, left_leg]
+    - [trunk, right_leg]
+    - [left_arm, right_arm]
+    - [left_leg, right_leg]
+    - [left_arm, left_leg]
+    - [right_arm, right_leg]
+    - [left_arm, right_leg]
+    - [right_arm, left_leg]
+    - [left_arm, left_foot]
+    - [right_arm, right_foot]
+    - [left_arm, right_foot]
+    - [right_arm, left_foot]
+    - [left_leg, right_foot]
+    - [right_leg, left_foot]
+  floor:
+    enabled: true
+    geom: floor
+    geoms: [left_foot_collision, right_foot_collision]
+    gain: 0.7
+    minimum_distance: 0.0
+    detection_distance: 0.05
+
+ik_match_table: {
+  "hips_mean": ["hips_sphere", 100, 0],
+
+  "left_hip": ["left_leg_pelvic_roll_link", 30, 3],
+  "left_thigh": ["left_leg_knee_pitch_link", 30, 3],
+  "left_calf": ["left_leg_ankle_roll_link", 30, 3],
+
+  "right_hip": ["right_leg_pelvic_roll_link", 30, 3],
+  "right_thigh": ["right_leg_knee_pitch_link", 30, 3],
+  "right_calf": ["right_leg_ankle_roll_link", 30, 3],
+
+  "head": ["head_sphere", 0, 3.0],
+
+  "left_shoulder": ["left_shoulder_roll_link", 30, 3],
+  "left_arm": ["left_elbow_pitch_link", 10.0, 1],
+  "left_fore_arm": ["left_wrist_roll_link", 10, 1],
+
+  "right_shoulder": ["right_shoulder_roll_link", 30, 3],
+  "right_arm": ["right_elbow_pitch_link", 10.0, 1],
+  "right_fore_arm": ["right_wrist_roll_link", 10, 1]
+
+}
+
+
+key_frame_config:
+  hips_mean:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_up_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_foot:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_up_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_leg:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  right_foot:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  shoulder_mean:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]
+  left_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, 1.0, 0.0]
+      z: [-1.0, 0.0, 0.0]
+  left_fore_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [1.0, 0.0, 0.0]
+      y: [0.0, 1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  left_hand:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    # Casbot fingers are wrist -Z. G1 fingers are wrist +X.
+    # The other two axes are the twist the left wrist can actually reach.
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, 1.0, 0.0]
+      z: [-1.0, 0.0, 0.0]
+  right_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, -1.0, 0.0]
+      z: [1.0, 0.0, 0.0]
+  right_fore_arm:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [-1.0, 0.0, 0.0]
+      y: [0.0, -1.0, 0.0]
+      z: [0.0, 0.0, 1.0]
+  right_hand:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    # Casbot fingers are wrist -Z and the palm faces +Y.
+    # G1 right_hand already flips X/Y; this map puts fingers on +X and palm on +Y.
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [0.0, -1.0, 0.0]
+      z: [1.0, 0.0, 0.0]
+  head:
+    offset_deg_xyz: [0.0, 0.0, 0.0]
+    axis_map_cols:
+      x: [0.0, 0.0, 1.0]
+      y: [1.0, 0.0, 0.0]
+      z: [0.0, 1.0, 0.0]

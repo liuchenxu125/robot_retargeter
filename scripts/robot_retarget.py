@@ -80,6 +80,61 @@ def key_callback(keycode: int) -> None:
         _PAUSED = not _PAUSED
 
 
+def _geom_lowest_z(model, data, geom_id, mesh_verts) -> float:
+    """World z of the lowest point on a geom."""
+    geom_type = model.geom_type[geom_id]
+    if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
+        pos = data.geom_xpos[geom_id]
+        mat = data.geom_xmat[geom_id].reshape(3, 3)
+        return float((mesh_verts[geom_id] @ mat.T + pos)[:, 2].min())
+    if geom_type == mujoco.mjtGeom.mjGEOM_CAPSULE:
+        radius = float(model.geom_size[geom_id, 0])
+        half = float(model.geom_size[geom_id, 1])
+        mat = data.geom_xmat[geom_id].reshape(3, 3)
+        axis = mat[:, 2]
+        center = data.geom_xpos[geom_id]
+        return float(min((center + axis * half)[2], (center - axis * half)[2]) - radius)
+    return float(data.geom_xpos[geom_id, 2] - model.geom_rbound[geom_id])
+
+
+def foot_ground_lifts(model, qpos, clearance: float = 0.0) -> np.ndarray:
+    """Per-frame world-z lift that puts the lowest foot point on ``clearance``.
+
+    ``qpos`` uses MuJoCo order: xyz, quaternion wxyz, then joints. The returned
+    lift is added to the root z only, so joint angles stay unchanged.
+    """
+    qpos = np.asarray(qpos, dtype=np.float64)
+    visual_ids = []
+    collision_ids = []
+    for geom_id in range(model.ngeom):
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geom_id) or ""
+        if name.endswith("_foot_visual"):
+            visual_ids.append(geom_id)
+        elif "foot" in name and "collision" in name:
+            collision_ids.append(geom_id)
+    foot_ids = visual_ids or collision_ids
+    if qpos.size == 0 or not foot_ids:
+        return np.zeros(qpos.shape[0], dtype=np.float64)
+
+    mesh_verts = {}
+    for geom_id in foot_ids:
+        if model.geom_type[geom_id] != mujoco.mjtGeom.mjGEOM_MESH:
+            continue
+        mesh_id = int(model.geom_dataid[geom_id])
+        adr = int(model.mesh_vertadr[mesh_id])
+        count = int(model.mesh_vertnum[mesh_id])
+        mesh_verts[geom_id] = np.asarray(model.mesh_vert[adr:adr + count], dtype=np.float64)
+
+    data = mujoco.MjData(model)
+    lifts = np.zeros(qpos.shape[0], dtype=np.float64)
+    for frame_idx, frame in enumerate(qpos):
+        data.qpos[:] = frame
+        mujoco.mj_forward(model, data)
+        lowest = min(_geom_lowest_z(model, data, geom_id, mesh_verts) for geom_id in foot_ids)
+        lifts[frame_idx] = max(0.0, float(clearance) - lowest)
+    return lifts
+
+
 class RobotRetarget:
 
     LEGACY_CONTACT_CONFIG_TO_NAMES = {
@@ -804,6 +859,22 @@ class RobotRetarget:
             if viewer is not None:
                 viewer.close()
     
+    def plant_feet_on_ground(self, clearance: float = 0.0) -> None:
+        """Raise root height so the lowest foot point is not below the ground.
+
+        Joint angles, root xy, and root orientation are left unchanged.
+        """
+        if len(self.result_pos) == 0:
+            return
+        lifts = foot_ground_lifts(self.model, np.asarray(self.result_pos), clearance=clearance)
+        for frame, lift in zip(self.result_pos, lifts):
+            frame[2] += lift
+        if self.verbose:
+            print(
+                "[plant feet] root z lift m: "
+                f"mean={lifts.mean():.4f} max={lifts.max():.4f}"
+            )
+
     def save_results_as_csv(self, output_path):
         if len(self.result_pos) == 0:
             raise ValueError("No retarget results to save. Run retarget() first.")
@@ -885,6 +956,10 @@ if  __name__ == "__main__":
     )
 
     robot_retarget.retarget()
+    if config.get("plant_feet_on_ground", False):
+        robot_retarget.plant_feet_on_ground(
+            clearance=float(config.get("plant_feet_clearance", 0.0))
+        )
 
     keypoint_stem = os.path.splitext(os.path.basename(keypoints_path))[0]
     if keypoint_stem.endswith("_keypoints"):
