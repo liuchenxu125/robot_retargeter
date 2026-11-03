@@ -1,6 +1,6 @@
 # ---- SMPL-X models (must be downloaded separately, see README) ----
 asset/smplx/
-
+dataset/
 # ---- Python ----
 __pycache__/
 *.py[cod]
