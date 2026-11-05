@@ -35,6 +35,7 @@ DEFAULT_OUT = PROJECT_ROOT / "output_data" / "robot_motion" / "seed"
 SOURCE_CONFIG = PROJECT_ROOT / "config" / "robot" / "g1.yaml"
 TARGET_CONFIG = PROJECT_ROOT / "config" / "robot" / "casbot02_primitives.yaml"
 FPS = 120.0
+FORMAT = "bones"
 ROOT_SCALE = 0.01
 
 _WORKER = None
@@ -84,6 +85,24 @@ def bones_csv_to_qpos(path: Path):
     return data
 
 
+def lafan_csv_to_qpos(path: Path):
+    """Load a headerless LAFAN1 CSV: xyz meters, quaternion xyzw, joints in radians."""
+    import numpy as np
+
+    data = np.loadtxt(path, delimiter=",", dtype=np.float64)
+    if data.ndim == 1:
+        data = data[None, :]
+    if data.shape[1] < 7:
+        raise ValueError(f"LAFAN1 CSV needs at least 7 columns: {path}")
+    qpos = data.astype(np.float32, copy=True)
+    quat_xyzw = qpos[:, 3:7].copy()
+    qpos[:, 3] = quat_xyzw[:, 3]
+    qpos[:, 4] = quat_xyzw[:, 0]
+    qpos[:, 5] = quat_xyzw[:, 1]
+    qpos[:, 6] = quat_xyzw[:, 2]
+    return qpos
+
+
 class RetargetWorker:
     def __init__(self, out_dir: Path) -> None:
         import mujoco
@@ -128,7 +147,7 @@ class RetargetWorker:
         mujoco.MjModel.from_xml_path = cached_from_xml
 
         self.out_dir = out_dir
-        self.tmp_dir = out_dir.parent / ".seed_tmp"
+        self.tmp_dir = out_dir.parent / f".{out_dir.name}_tmp"
         self.tmp_dir.mkdir(parents=True, exist_ok=True)
         self.np = np
         self.RobotRetarget = RobotRetarget
@@ -299,13 +318,17 @@ class RetargetWorker:
         source = Path(src)
         started = time.perf_counter()
         try:
-            qpos = bones_csv_to_qpos(source)
+            if FORMAT == "lafan":
+                qpos = lafan_csv_to_qpos(source)
+            else:
+                qpos = bones_csv_to_qpos(source)
             payload = self.build_payload(source, qpos)
             self.ensure_retargeter(payload)
             self.apply_payload(payload)
             self.retargeter.retarget()
             if self.plant_feet:
                 self.retargeter.plant_feet_on_ground(clearance=self.plant_clearance)
+            self.retargeter.apply_shoulder_roll_outward_offset(degrees=3.0)
             temporary = self.tmp_dir / source.name
             final_path = self.out_dir / source.name
             self.retargeter.save_results_as_csv(str(temporary))
@@ -317,9 +340,11 @@ class RetargetWorker:
             return ("fail", source.name, 0, time.perf_counter() - started, str(exc))
 
 
-def _init_worker(out_dir: str) -> None:
-    global DEFAULT_OUT
+def _init_worker(out_dir: str, fps: float, source_format: str) -> None:
+    global DEFAULT_OUT, FPS, FORMAT
     DEFAULT_OUT = Path(out_dir)
+    FPS = float(fps)
+    FORMAT = source_format
 
 
 def _worker_run(src: str) -> tuple[str, str, int, float, str]:
@@ -336,6 +361,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 4) - 4))
     parser.add_argument("--limit", type=int, default=0, help="Process at most this many pending files")
     parser.add_argument("--only", default="", help="Process only this source filename")
+    parser.add_argument("--fps", type=float, default=FPS)
+    parser.add_argument(
+        "--format",
+        choices=("bones", "lafan"),
+        default=FORMAT,
+        help="bones: Seed Euler/cm CSV. lafan: headerless xyzw quaternion CSV.",
+    )
     return parser.parse_args()
 
 
@@ -344,8 +376,10 @@ def main() -> None:
     src_dir = args.src.expanduser().resolve()
     out_dir = args.out.expanduser().resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    global DEFAULT_OUT
+    global DEFAULT_OUT, FPS, FORMAT
     DEFAULT_OUT = out_dir
+    FPS = float(args.fps)
+    FORMAT = args.format
 
     sources = list_source_csvs(src_dir)
     if args.only:
@@ -359,27 +393,25 @@ def main() -> None:
 
     print(
         f"[info] source={len(sources)} pending={len(pending)} "
-        f"already={len(already)} workers={args.workers} out={out_dir}",
+        f"already={len(already)} workers={args.workers} fps={FPS} format={FORMAT} out={out_dir}",
         flush=True,
     )
     if not pending:
         return
 
-    log_path = out_dir.parent / "seed_batch.log"
-    fail_path = out_dir.parent / "seed_batch_failures.txt"
+    log_path = out_dir.parent / f"{out_dir.name}_batch.log"
+    fail_path = out_dir.parent / f"{out_dir.name}_batch_failures.txt"
     workers = 1 if args.only or args.limit == 1 else max(1, args.workers)
     ctx = get_context("spawn")
     ok = 0
     failed = 0
     frames = 0
     started = time.perf_counter()
-    with ctx.Pool(processes=workers, initializer=_init_worker, initargs=(str(out_dir),)) as pool, log_path.open("a", encoding="utf-8") as log, fail_path.open(
-        "a", encoding="utf-8"
-    ) as fail_log:
-        for index, (status, name, file_frames, seconds, message) in enumerate(
-            pool.imap_unordered(_worker_run, [str(path) for path in pending], chunksize=1),
-            start=1,
-        ):
+    sources_pending = [str(path) for path in pending]
+
+    def consume(results, log, fail_log) -> None:
+        nonlocal ok, failed, frames
+        for index, (status, name, file_frames, seconds, message) in enumerate(results, start=1):
             if status == "ok":
                 ok += 1
                 frames += file_frames
@@ -397,6 +429,19 @@ def main() -> None:
             print(line, flush=True)
             log.write(line + "\n")
             log.flush()
+
+    with log_path.open("a", encoding="utf-8") as log, fail_path.open("a", encoding="utf-8") as fail_log:
+        # One file runs in this process. A spawn pool deadlocks on a single worker here.
+        if workers == 1:
+            _init_worker(str(out_dir), FPS, FORMAT)
+            consume((_worker_run(path) for path in sources_pending), log, fail_log)
+        else:
+            with ctx.Pool(
+                processes=workers,
+                initializer=_init_worker,
+                initargs=(str(out_dir), FPS, FORMAT),
+            ) as pool:
+                consume(pool.imap_unordered(_worker_run, sources_pending, chunksize=1), log, fail_log)
 
     elapsed = time.perf_counter() - started
     print(

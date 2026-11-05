@@ -16,6 +16,7 @@ Usage:
 """
 
 import argparse
+import math
 import mink
 import mujoco
 import mujoco.viewer
@@ -798,6 +799,30 @@ class RobotRetarget:
             ):
                 break
     
+    def _integrate_ik_velocity(self, velocity: np.ndarray, dt: float, frame_idx: int) -> bool:
+        """Integrate one IK velocity. Reject non-finite or exploded solutions.
+
+        A tight collision limit can make daqp return a velocity that breaks
+        MuJoCo's quaternion integration. Keep the last valid pose instead.
+        """
+        if velocity is None or not np.isfinite(velocity).all():
+            print(f"[ik] frame {frame_idx}: non-finite velocity, keep pose", flush=True)
+            return False
+        peak = float(np.max(np.abs(velocity)))
+        # 200 rad/s or m/s over the 1 ms model step is 0.2 rad / 0.2 m.
+        if peak > 200.0:
+            print(f"[ik] frame {frame_idx}: velocity peak {peak:.1f}, keep pose", flush=True)
+            return False
+        qpos = self.configuration.data.qpos.copy()
+        mujoco.mj_integratePos(self.model, qpos, velocity, dt)
+        quat_norm = float(np.linalg.norm(qpos[3:7]))
+        if not np.isfinite(qpos).all() or quat_norm < 1e-8:
+            print(f"[ik] frame {frame_idx}: invalid qpos after integrate, keep pose", flush=True)
+            return False
+        self.configuration.data.qpos[:] = qpos
+        self.configuration.update()
+        return True
+
     def retarget(self):
         global _PAUSED
         viewer = None
@@ -824,7 +849,8 @@ class RobotRetarget:
                     vel = mink.solve_ik(
                         self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
                     )
-                    self.configuration.integrate_inplace(vel, dt)
+                    if not self._integrate_ik_velocity(vel, dt, frame_idx):
+                        break
                     next_error = self.error()
                     num_iter = 0
                     while curr_error - next_error > 0.001 and num_iter < self.max_iter:
@@ -832,7 +858,8 @@ class RobotRetarget:
                         vel = mink.solve_ik(
                             self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
                         )
-                        self.configuration.integrate_inplace(vel, dt)
+                        if not self._integrate_ik_velocity(vel, dt, frame_idx):
+                            break
                         next_error = self.error()
                         num_iter += 1
                 curr_pos = self.configuration.data.qpos.copy()
@@ -874,6 +901,33 @@ class RobotRetarget:
                 "[plant feet] root z lift m: "
                 f"mean={lifts.mean():.4f} max={lifts.max():.4f}"
             )
+
+    def apply_shoulder_roll_outward_offset(self, degrees: float = 3.0) -> None:
+        """Hardcoded outward offset on both shoulder roll joints.
+
+        Left shoulder roll opens outward with positive angle; right opens
+        outward with negative angle. Applied to every frame in result_pos.
+        """
+        if len(self.result_pos) == 0 or degrees == 0.0:
+            return
+        rad = math.radians(degrees)
+        offsets = {
+            "upper_left_2_joint": +rad,
+            "upper_right_2_joint": -rad,
+        }
+        applied = []
+        for joint_name, delta in offsets.items():
+            jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
+            if jid < 0:
+                continue
+            adr = int(self.model.jnt_qposadr[jid])
+            lo = float(self.model.jnt_range[jid, 0])
+            hi = float(self.model.jnt_range[jid, 1])
+            for frame in self.result_pos:
+                frame[adr] = min(max(frame[adr] + delta, lo), hi)
+            applied.append(f"{joint_name}{'+' if delta>0 else ''}{delta:.4f}rad")
+        if self.verbose and applied:
+            print("[shoulder roll] outward offset: " + ", ".join(applied))
 
     def save_results_as_csv(self, output_path):
         if len(self.result_pos) == 0:
@@ -960,6 +1014,7 @@ if  __name__ == "__main__":
         robot_retarget.plant_feet_on_ground(
             clearance=float(config.get("plant_feet_clearance", 0.0))
         )
+    robot_retarget.apply_shoulder_roll_outward_offset(degrees=3.0)
 
     keypoint_stem = os.path.splitext(os.path.basename(keypoints_path))[0]
     if keypoint_stem.endswith("_keypoints"):

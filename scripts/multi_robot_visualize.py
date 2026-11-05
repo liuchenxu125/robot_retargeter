@@ -16,8 +16,10 @@ Usage example:
 """
 
 import argparse
+import csv
 import math
 import os
+import re
 import time
 
 import mujoco
@@ -25,6 +27,8 @@ import mujoco.viewer
 import numpy as np
 import yaml
 from tqdm import tqdm
+
+from convert_bones_to_lafan1 import euler_xyz_deg_to_quat_xyzw, safe_float
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
@@ -34,6 +38,14 @@ PROJECT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 ROBOT_CONFIG_DIR = os.path.join(PROJECT_DIR, "config", "robot")
 
 MOTION_DIR = os.path.join(SCRIPT_DIR, "..", "output_data", "robot_motion")
+# Original G1 clips. Seed output keeps these basenames but stores casbot qpos,
+# so the G1 side is loaded from the source dataset when it is not already converted.
+G1_SOURCE_DIRS = [
+    "/home/casbot/Desktop/SuperMimic-Reproduced/data/seed/g1/csv",
+    "/home/casbot/Desktop/SuperMimic-Reproduced/data/raw/lafan1/g1",
+]
+_CSV_INDEX: dict[str, dict[str, list[str]]] = {}
+_ROBOT_NQ: dict[str, int] = {}
 
 
 def available_robots() -> list[str]:
@@ -65,6 +77,167 @@ def get_robot_xml(robot: str) -> str:
     if not os.path.isabs(xml_path):
         xml_path = os.path.join(PROJECT_DIR, xml_path)
     return xml_path
+
+
+def _norm_motion_name(name: str) -> str:
+    """Treat one or more underscores as the same, so A464 matches __A464."""
+    return re.sub(r"_+", "_", name)
+
+
+def _csv_index(root: str) -> dict[str, list[str]]:
+    root = os.path.abspath(root)
+    cached = _CSV_INDEX.get(root)
+    if cached is not None:
+        return cached
+    index: dict[str, list[str]] = {}
+    if os.path.isdir(root):
+        for dirpath, dirnames, filenames in os.walk(root):
+            dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+            for filename in filenames:
+                if not filename.endswith(".csv"):
+                    continue
+                stem = filename[:-4]
+                index.setdefault(_norm_motion_name(stem), []).append(os.path.join(dirpath, filename))
+    _CSV_INDEX[root] = index
+    return index
+
+
+def _robot_nq(robot: str) -> int:
+    cached = _ROBOT_NQ.get(robot)
+    if cached is not None:
+        return cached
+    model = mujoco.MjModel.from_xml_path(get_robot_xml(robot))
+    _ROBOT_NQ[robot] = int(model.nq)
+    return int(model.nq)
+
+
+def _first_line_is_header(csv_path: str) -> bool:
+    with open(csv_path, "r", encoding="utf-8") as f:
+        token = f.readline().split(",", 1)[0].strip()
+    if token == "":
+        return True
+    try:
+        float(token)
+    except ValueError:
+        return True
+    return False
+
+
+def _numeric_ncols(csv_path: str) -> int:
+    with open(csv_path, "r", encoding="utf-8") as f:
+        for line in f:
+            token = line.split(",", 1)[0].strip()
+            try:
+                float(token)
+            except ValueError:
+                continue
+            return len(line.strip().split(","))
+    raise ValueError(f"Motion file has no numeric rows: {csv_path}")
+
+
+def _lookup_paths(root: str, motion: str, robot: str) -> list[str]:
+    index = _csv_index(root)
+    found: list[str] = []
+    for key in (_norm_motion_name(motion), _norm_motion_name(f"{motion}_{robot}")):
+        found.extend(index.get(key, []))
+    return found
+
+
+def resolve_motion_csv(motion: str, robot: str, motion_dir: str) -> tuple[str, str]:
+    """Find a motion CSV for one robot.
+
+    Search order:
+    1. output_data/robot_motion/<motion>_<robot>.csv
+    2. The same folder and its subfolders (seed/, lafan1/), matching the original
+       filename. Extra underscores are ignored, and the column count must match
+       that robot.
+    3. For g1 only, the original Bones or LAFAN1 dataset.
+
+    Returns (path, kind) where kind is "lafan" or "bones".
+    """
+    legacy = os.path.join(motion_dir, f"{motion}_{robot}.csv")
+    if os.path.isfile(legacy):
+        kind = "bones" if _first_line_is_header(legacy) else "lafan"
+        return legacy, kind
+
+    nq = _robot_nq(robot)
+    lafan_hits = [
+        path
+        for path in _lookup_paths(motion_dir, motion, robot)
+        if not _first_line_is_header(path) and _numeric_ncols(path) == nq
+    ]
+    if robot == "g1":
+        for source_dir in G1_SOURCE_DIRS:
+            for path in _lookup_paths(source_dir, motion, robot):
+                if _first_line_is_header(path):
+                    continue
+                if _numeric_ncols(path) == nq:
+                    lafan_hits.append(path)
+
+    if lafan_hits:
+        return _pick_motion_path(lafan_hits, motion, robot), "lafan"
+
+    if robot == "g1":
+        bones_hits: list[str] = []
+        for source_dir in G1_SOURCE_DIRS:
+            for path in _lookup_paths(source_dir, motion, robot):
+                if _first_line_is_header(path):
+                    bones_hits.append(path)
+        if bones_hits:
+            return _pick_motion_path(bones_hits, motion, robot), "bones"
+
+    searched = [os.path.abspath(motion_dir)]
+    if robot == "g1":
+        searched.extend(G1_SOURCE_DIRS)
+    raise FileNotFoundError(
+        f"Motion file not found for '{motion}' on {robot}. Looked in: " + ", ".join(searched)
+    )
+
+
+def _pick_motion_path(paths: list[str], motion: str, robot: str) -> str:
+    def score(path: str) -> tuple[int, int]:
+        stem = os.path.splitext(os.path.basename(path))[0]
+        rank = 0
+        if stem == f"{motion}_{robot}":
+            rank += 100
+        if stem == motion:
+            rank += 80
+        if stem.endswith("_" + robot):
+            rank += 40
+        return rank, -path.count(os.sep)
+
+    return max(paths, key=score)
+
+
+def load_bones_motion(csv_path: str, root_scale: float = 0.01) -> np.ndarray:
+    """Load a Bones Seed CSV (header, Euler degrees, centimeters) as MuJoCo qpos."""
+    rows: list[list[float]] = []
+    with open(csv_path, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if not reader.fieldnames:
+            raise ValueError(f"CSV has no header: {csv_path}")
+        joint_cols = [c for c in reader.fieldnames if c.endswith("_dof")]
+        for row in reader:
+            qx, qy, qz, qw = euler_xyz_deg_to_quat_xyzw(
+                safe_float(row, "root_rotateX"),
+                safe_float(row, "root_rotateY"),
+                safe_float(row, "root_rotateZ"),
+            )
+            rows.append(
+                [
+                    safe_float(row, "root_translateX") * root_scale,
+                    safe_float(row, "root_translateY") * root_scale,
+                    safe_float(row, "root_translateZ") * root_scale,
+                    qw,
+                    qx,
+                    qy,
+                    qz,
+                    *[math.radians(safe_float(row, joint)) for joint in joint_cols],
+                ]
+            )
+    if not rows:
+        raise ValueError(f"CSV has no frames: {csv_path}")
+    return np.asarray(rows, dtype=np.float64)
 
 
 def load_motion(csv_path: str) -> np.ndarray:
@@ -194,7 +367,7 @@ def main() -> None:
     parser.add_argument(
         "--motion",
         default="body_check_001__A548_M_from_g1",
-        help="Motion name (without robot suffix or extension), filename format: <motion_name>_<robot_name>.csv",
+        help="Motion name. Matches <motion>_<robot>.csv, or the original filename under seed/ and lafan1/",
     )
     parser.add_argument(
         "--robots",
@@ -238,10 +411,9 @@ def main() -> None:
     # Build file paths and load each robot's motion data
     robot_qpos: dict[str, np.ndarray] = {}
     for robot in robots:
-        csv_path = os.path.join(args.motion_dir, f"{args.motion}_{robot}.csv")
-        if not os.path.isfile(csv_path):
-            raise FileNotFoundError(f"Motion file not found: {csv_path}")
-        robot_qpos[robot] = load_motion(csv_path)
+        csv_path, kind = resolve_motion_csv(args.motion, robot, args.motion_dir)
+        print(f"{robot}: {csv_path}")
+        robot_qpos[robot] = load_bones_motion(csv_path) if kind == "bones" else load_motion(csv_path)
 
     n_frames = min(q.shape[0] for q in robot_qpos.values())
     print(

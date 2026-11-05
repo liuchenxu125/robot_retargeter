@@ -360,3 +360,17 @@ $$
 
 这样可以显著减小支撑相内的足端漂移（foot sliding），同时在摆动相保持动作自由度。
 
+
+
+
+
+
+
+cd ~/Desktop/hl_robot_retargeter
+
+python scripts/robot_replay.py --no-viewer   --motion-file dataset/bones_seed_g1/Relaxed_walk_forward_001__A057_M.csv   --source-robot-config config/robot/g1.yaml   --target-robot-config config/robot/casbot02_primitives.yaml   --fps 120
+
+python scripts/robot_retarget.py   --config config/robot/casbot02_primitives.yaml   --keypoints-name Relaxed_walk_forward_001__A057_M_from_g1   --no-render-debug
+
+
+python scripts/multi_robot_visualize.py   --motion dance_fresh_001__A464   --robots g1 casbot02_primitives   --source_fps 120 --render_fps 30
