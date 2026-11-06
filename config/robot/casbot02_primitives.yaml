@@ -42,8 +42,25 @@ collision_avoidance:
   enabled: true
   gain: 0.85
   # Mesh-surface clearance used by self-collision.
-  minimum_distance: 0.015
+  minimum_distance: 0.003
   detection_distance: 0.05
+  # Include all active robot geoms, respecting parent/weld and XML exclusions.
+  auto_pairs: true
+  # The convex hulls overlap at the mechanical ankle connection in every frame.
+  exclude_pairs:
+    - [left_shin_collision, left_foot_collision]
+    - [right_shin_collision, right_foot_collision]
+  recovery:
+    enabled: true
+    gain: 0.25
+    max_distance: 0.002
+  max_ik_step: 0.05
+  export_correction:
+    enabled: true
+    max_iterations: 80
+    max_joint_step: 0.05
+    tolerance: 0.00005
+    slack_cost: 1000000.0
   geom_groups:
     trunk: [pelvis_collision, torso_collision, head_yaw_collision, head_collision]
     left_arm: [left_shoulder_pitch_collision, left_shoulder_roll_collision, left_upper_arm_collision, left_elbow_collision, left_forearm_collision, left_wrist_pitch_collision, left_wrist_roll_collision, left_hand_collision]

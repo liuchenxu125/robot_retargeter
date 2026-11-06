@@ -26,10 +26,18 @@ import pickle
 import time
 import csv
 import copy
+import json
 import os
 import glfw
 from tqdm import tqdm
 from scipy.spatial.transform import Rotation as Rot
+
+if __package__:
+    from .collision_safety import (CollisionProjector, RecoveringCollisionAvoidanceLimit,
+                                   clearance_deficit, distance_rows)
+else:
+    from collision_safety import (CollisionProjector, RecoveringCollisionAvoidanceLimit,
+                                  clearance_deficit, distance_rows)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -337,6 +345,7 @@ class RobotRetarget:
             pairs: [[groupA, groupB], ...]  self-collision group pairs
             floor: {enabled, geom, geoms, gain, minimum_distance, detection_distance}
         """
+        self.self_collision_limits = []
         cfg = self.collision_avoidance
         if not cfg or not cfg.get("enabled", False):
             return
@@ -371,20 +380,33 @@ class RobotRetarget:
                 )
             geom_padding[geom_name] = distance
 
-        def add_limits(pairs, params, default_gain, default_minimum, default_detection):
+        excluded_geom_pairs = []
+        for name_a, name_b in cfg.get("exclude_pairs", []):
+            for a in resolve_group(name_a):
+                for b in resolve_group(name_b):
+                    excluded_geom_pairs.append((self.model.geom(a).id, self.model.geom(b).id))
+        recovery = cfg.get("recovery", {})
+
+        def add_limits(pairs, params, default_gain, default_minimum, default_detection,
+                       self_collision=False):
             # Partition by total padding so each pair keeps its own clearance.
             # Mink still handles body/parent and collision-mask filtering.
             pairs_by_padding = {}
             for group_a, group_b in pairs:
                 for geom_a in group_a:
                     for geom_b in group_b:
-                        extra = geom_padding.get(geom_a, 0.0) + geom_padding.get(geom_b, 0.0)
+                        name_a = self.model.geom(geom_a).name
+                        name_b = self.model.geom(geom_b).name
+                        extra = geom_padding.get(name_a, 0.0) + geom_padding.get(name_b, 0.0)
                         pairs_by_padding.setdefault(extra, []).append(([geom_a], [geom_b]))
             for extra, padded_pairs in pairs_by_padding.items():
-                self.ik_limits.append(
-                    mink.CollisionAvoidanceLimit(
+                limit = RecoveringCollisionAvoidanceLimit(
                         self.model,
                         padded_pairs,
+                        excluded_geom_pairs=excluded_geom_pairs,
+                        recovery_gain=(float(recovery.get("gain", 0.25))
+                                       if self_collision and recovery.get("enabled", False) else 0.0),
+                        max_recovery_distance=float(recovery.get("max_distance", 0.002)),
                         gain=float(params.get("gain", default_gain)),
                         minimum_distance_from_collisions=float(
                             params.get("minimum_distance", default_minimum)
@@ -393,7 +415,9 @@ class RobotRetarget:
                             params.get("detection_distance", default_detection)
                         ) + extra,
                     )
-                )
+                self.ik_limits.append(limit)
+                if self_collision:
+                    self.self_collision_limits.append(limit)
 
         geom_pairs = []
         for pair in cfg.get("pairs", []):
@@ -401,8 +425,15 @@ class RobotRetarget:
                 raise ValueError(f"[collision avoidance] pair must have 2 entries, got {pair}")
             geom_pairs.append((resolve_group(pair[0]), resolve_group(pair[1])))
 
+        if cfg.get("auto_pairs", False):
+            robot_geoms = [geom_id for geom_id in range(self.model.ngeom)
+                           if self.model.geom_bodyid[geom_id] != 0
+                           and (self.model.geom_contype[geom_id]
+                                or self.model.geom_conaffinity[geom_id])]
+            geom_pairs.append((robot_geoms, robot_geoms))
+
         if geom_pairs:
-            add_limits(geom_pairs, cfg, 0.85, 0.003, 0.05)
+            add_limits(geom_pairs, cfg, 0.85, 0.003, 0.05, self_collision=True)
             if self.verbose:
                 print(f"[collision avoidance] self-collision pairs: {cfg.get('pairs', [])}")
 
@@ -809,6 +840,12 @@ class RobotRetarget:
             print(f"[ik] frame {frame_idx}: non-finite velocity, keep pose", flush=True)
             return False
         peak = float(np.max(np.abs(velocity)))
+        if self.collision_avoidance.get("recovery", {}).get("enabled", False):
+            max_step = float(self.collision_avoidance.get("max_ik_step", 0.05))
+            step_peak = peak * dt
+            if step_peak > max_step:
+                velocity = velocity * (max_step / step_peak)
+                peak = float(np.max(np.abs(velocity)))
         # 200 rad/s or m/s over the 1 ms model step is 0.2 rad / 0.2 m.
         if peak > 200.0:
             print(f"[ik] frame {frame_idx}: velocity peak {peak:.1f}, keep pose", flush=True)
@@ -853,7 +890,17 @@ class RobotRetarget:
                         break
                     next_error = self.error()
                     num_iter = 0
-                    while curr_error - next_error > 0.001 and num_iter < self.max_iter:
+                    while num_iter < self.max_iter:
+                        if curr_error - next_error <= 0.001:
+                            recovery = self.collision_avoidance.get("recovery", {})
+                            if not recovery.get("enabled", False):
+                                break
+                            tolerance = float(self.collision_avoidance.get(
+                                "export_correction", {}).get("tolerance", 0.00005))
+                            rows = distance_rows(self.model, self.configuration.data,
+                                                 self.self_collision_limits)
+                            if clearance_deficit(rows) <= tolerance:
+                                break
                         curr_error = next_error
                         vel = mink.solve_ik(
                             self.configuration, self.tasks, dt, self.solver, self.damping, limits=self.ik_limits
@@ -933,6 +980,8 @@ class RobotRetarget:
         if len(self.result_pos) == 0:
             raise ValueError("No retarget results to save. Run retarget() first.")
 
+        self.correct_export_collisions()
+
         # [num_frame, num_joint], the first 7 dims are posXYZ + quat(wxyz)
         result = np.asarray(self.result_pos, dtype=np.float64)
         if result.ndim != 2 or result.shape[1] < 7:
@@ -949,8 +998,82 @@ class RobotRetarget:
             writer = csv.writer(f)
             writer.writerows(result_xyzw.tolist())
 
+        if getattr(self, "last_collision_report", None) is not None:
+            with open(str(output_path) + ".collision.json", "w", encoding="utf-8") as handle:
+                json.dump(self.last_collision_report, handle, indent=2, ensure_ascii=False)
+
         if self.verbose:
             print(f"Saved retarget results to: {output_path} (shape={result_xyzw.shape})")
+
+    def correct_export_collisions(self):
+        """Repair all postprocessed poses and refuse unresolved collision exports."""
+        options = self.collision_avoidance.get("export_correction", {})
+        limits = getattr(self, "self_collision_limits", [])
+        self.last_collision_report = None
+        if not options.get("enabled", False) or not limits:
+            return
+        settings = {name: options[name] for name in (
+            "max_iterations", "max_joint_step", "tolerance", "slack_cost") if name in options}
+        projector = CollisionProjector(self.model, limits, solver=self.solver, **settings)
+        original = np.asarray(self.result_pos, dtype=np.float64)
+        corrected = original.copy()
+        report = {
+            "frames": len(original), "fps": float(self.fps),
+            "checked_pairs": sum(len(limit.geom_id_pairs) for limit in limits),
+            "minimum_distance_m": float(self.collision_avoidance.get("minimum_distance", 0.003)),
+            "tolerance_m": projector.tolerance,
+            "penetrating_frames_before": 0, "penetrating_frames_after": 0,
+            "below_clearance_frames_before": 0, "below_clearance_frames_after": 0,
+            "corrected_frames": 0, "max_joint_correction_rad": 0.0,
+            "minimum_distance_before_m": None, "minimum_distance_after_m": None,
+            "excluded_geom_pairs": self.collision_avoidance.get("exclude_pairs", []),
+            "unresolved": [],
+        }
+        for index, pose in enumerate(original):
+            corrected[index], before, after, iterations = projector.project(pose)
+            for label, rows in (("before", before), ("after", after)):
+                minimum = min((row.distance for row in rows), default=None)
+                if minimum is not None:
+                    key = "minimum_distance_" + label + "_m"
+                    report[key] = minimum if report[key] is None else min(report[key], minimum)
+                report["penetrating_frames_" + label] += int(
+                    any(row.distance < -1e-6 for row in rows))
+                report["below_clearance_frames_" + label] += int(
+                    clearance_deficit(rows) > projector.tolerance)
+            if not np.array_equal(corrected[index], pose):
+                report["corrected_frames"] += 1
+                delta = np.empty(self.model.nv)
+                mujoco.mj_differentiatePos(self.model, delta, 1.0, pose, corrected[index])
+                report["max_joint_correction_rad"] = max(
+                    report["max_joint_correction_rad"], float(np.max(np.abs(delta))))
+            if clearance_deficit(after) > projector.tolerance:
+                worst = max(after, key=lambda row: row.margin - row.distance)
+                report["unresolved"].append({
+                    "frame_1based": index + 1, "time_s": index / self.fps,
+                    "pair": [self.model.geom(g).name for g in worst.pair],
+                    "distance_m": worst.distance, "required_m": worst.margin,
+                    "iterations": iterations,
+                })
+            if (index + 1) % 500 == 0:
+                print(f"[export collision] checked {index + 1}/{len(original)}, "
+                      f"corrected={report['corrected_frames']}, "
+                      f"unresolved={len(report['unresolved'])}", flush=True)
+        self.last_collision_report = report
+        if report["unresolved"]:
+            raise RuntimeError(
+                f"Export collision correction failed on {len(report['unresolved'])} frames; "
+                f"CSV not written. First failures: {report['unresolved'][:3]}"
+            )
+        floor = self.collision_avoidance.get("floor", {})
+        if floor.get("enabled", False):
+            corrected[:, 2] += foot_ground_lifts(
+                self.model, corrected, clearance=float(floor.get("minimum_distance", 0.0)))
+        self.result_pos = list(corrected)
+        print(f"[export collision] penetration frames "
+              f"{report['penetrating_frames_before']} -> {report['penetrating_frames_after']}, "
+              f"below clearance {report['below_clearance_frames_before']} -> "
+              f"{report['below_clearance_frames_after']}, "
+              f"corrected={report['corrected_frames']}", flush=True)
 
 
 

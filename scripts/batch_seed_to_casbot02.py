@@ -333,6 +333,9 @@ class RetargetWorker:
             final_path = self.out_dir / source.name
             self.retargeter.save_results_as_csv(str(temporary))
             os.replace(temporary, final_path)
+            audit = Path(str(temporary) + ".collision.json")
+            if audit.exists():
+                os.replace(audit, str(final_path) + ".collision.json")
             frames = int(qpos.shape[0])
             return ("ok", source.name, frames, time.perf_counter() - started, "")
         except Exception as exc:
