@@ -16,10 +16,12 @@ class RecoveringCollisionAvoidanceLimit(mink.CollisionAvoidanceLimit):
     """
 
     def __init__(self, model, geom_pairs, *, excluded_geom_pairs=(),
-                 recovery_gain=0.0, max_recovery_distance=0.002, **kwargs):
+                 recovery_gain=0.0, max_recovery_distance=0.002,
+                 displacement_bounds=False, **kwargs):
         self.excluded_geom_pairs = {tuple(sorted(pair)) for pair in excluded_geom_pairs}
         self.recovery_gain = float(recovery_gain)
         self.max_recovery_distance = float(max_recovery_distance)
+        self.displacement_bounds = bool(displacement_bounds or self.recovery_gain > 0.0)
         if not 0.0 <= self.recovery_gain <= 1.0:
             raise ValueError("collision recovery gain must be in [0, 1]")
         if not np.isfinite(self.max_recovery_distance) or self.max_recovery_distance <= 0:
@@ -27,7 +29,20 @@ class RecoveringCollisionAvoidanceLimit(mink.CollisionAvoidanceLimit):
         super().__init__(model, geom_pairs, **kwargs)
 
     def _construct_geom_id_pairs(self, geom_pairs):
-        pairs = super()._construct_geom_id_pairs(geom_pairs)
+        pairs = set(super()._construct_geom_id_pairs(geom_pairs))
+        # A world plane is not a mechanical parent of the floating pelvis.
+        # Preserve its pair when enabling whole-body ground detection.
+        for group_a, group_b in geom_pairs:
+            for first in group_a:
+                a = self.model.geom(first).id if isinstance(first, str) else int(first)
+                for second in group_b:
+                    b = self.model.geom(second).id if isinstance(second, str) else int(second)
+                    plane = (self.model.geom_type[a] == mujoco.mjtGeom.mjGEOM_PLANE
+                             or self.model.geom_type[b] == mujoco.mjtGeom.mjGEOM_PLANE)
+                    masks = ((self.model.geom_contype[a] & self.model.geom_conaffinity[b])
+                             or (self.model.geom_contype[b] & self.model.geom_conaffinity[a]))
+                    if plane and masks and self.model.geom_bodyid[a] != self.model.geom_bodyid[b]:
+                        pairs.add(tuple(sorted((a, b))))
         excluded_bodies = {int(signature) for signature in self.model.exclude_signature}
         result = []
         for a, b in pairs:
@@ -41,7 +56,7 @@ class RecoveringCollisionAvoidanceLimit(mink.CollisionAvoidanceLimit):
 
     def compute_qp_inequalities(self, configuration, dt):
         constraint = super().compute_qp_inequalities(configuration, dt)
-        if self.recovery_gain == 0.0:
+        if not self.displacement_bounds:
             return constraint
         # Mink's QP solves for delta-q (solve_ik divides it by dt afterwards).
         # Build displacement bounds from geometry instead of inheriting the
@@ -50,8 +65,17 @@ class RecoveringCollisionAvoidanceLimit(mink.CollisionAvoidanceLimit):
             a, b = self.geom_id_pairs[index]
             distance = mujoco.mj_geomDistance(
                 self.model, configuration.data, a, b,
-                self.collision_detection_distance, None,
+                self.collision_detection_distance, self._fromto,
             )
+            plane_a = self.model.geom_type[a] == mujoco.mjtGeom.mjGEOM_PLANE
+            plane_b = self.model.geom_type[b] == mujoco.mjtGeom.mjGEOM_PLANE
+            if plane_a or plane_b:
+                plane, other = (a, b) if plane_a else (b, a)
+                point = self._fromto[3:] if plane_a else self._fromto[:3]
+                normal = configuration.data.geom_xmat[plane].reshape(3, 3)[:, 2]
+                mujoco.mj_jac(self.model, configuration.data, self._jac1, None, point,
+                              int(self.model.geom_bodyid[other]))
+                constraint.G[index] = -(normal @ self._jac1)
             deficit = self.minimum_distance_from_collisions - distance
             constraint.h[index] = (self.gain * max(0.0, -deficit)
                                    + self.bound_relaxation * dt)

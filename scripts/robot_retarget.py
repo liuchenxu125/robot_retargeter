@@ -346,6 +346,7 @@ class RobotRetarget:
             floor: {enabled, geom, geoms, gain, minimum_distance, detection_distance}
         """
         self.self_collision_limits = []
+        self.ground_collision_limits = []
         cfg = self.collision_avoidance
         if not cfg or not cfg.get("enabled", False):
             return
@@ -404,6 +405,7 @@ class RobotRetarget:
                         self.model,
                         padded_pairs,
                         excluded_geom_pairs=excluded_geom_pairs,
+                        displacement_bounds=bool(params.get("full_body", False)),
                         recovery_gain=(float(recovery.get("gain", 0.25))
                                        if self_collision and recovery.get("enabled", False) else 0.0),
                         max_recovery_distance=float(recovery.get("max_distance", 0.002)),
@@ -418,6 +420,8 @@ class RobotRetarget:
                 self.ik_limits.append(limit)
                 if self_collision:
                     self.self_collision_limits.append(limit)
+                else:
+                    self.ground_collision_limits.append(limit)
 
         geom_pairs = []
         for pair in cfg.get("pairs", []):
@@ -441,6 +445,10 @@ class RobotRetarget:
         if floor_cfg.get("enabled", False):
             floor_geom = floor_cfg.get("geom", "floor")
             contact_geoms = floor_cfg.get("geoms", [])
+            if floor_cfg.get("full_body", False):
+                contact_geoms = [self.model.geom(i).name for i in range(self.model.ngeom)
+                                 if self.model.geom_bodyid[i] != 0
+                                 and (self.model.geom_contype[i] or self.model.geom_conaffinity[i])]
             if contact_geoms:
                 resolve_group(floor_geom)
                 for geom_name in contact_geoms:
